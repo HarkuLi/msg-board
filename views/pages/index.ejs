@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/index.css">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <title>message board</title>
+</head>
+<body>
+<% if(user){ %>
+    <span>user: <%= user %></span>
+    <form action="new_post" method="post" style="display:inline">
+        <input type="submit" value="new post">
+    </form>
+    <form action="log_out" method="post" style="display:inline">
+        <input type="submit" value="logout">
+    </form>
+<% } else{ %>
+    <span>user: guest</span>
+    <form action="login" method="get" style="display:inline">
+        <input type="submit" value="login">
+    </form>
+    <form action="signup" method="get" style="display:inline">
+        <input type="submit" value="sign up">
+    </form>
+<% } %>
+
+<div class="container">
+    <% for(var i=0; i < post_lists.length; i++){%>
+        <% if(post_lists[i].title){ %>
+            <h1><%= post_lists[i].title %></h1>
+            <div><%= post_lists[i].content %></div>
+            </br>
+            <div>author: <%= post_lists[i].author %></div>
+            <div>posted time: <%= post_lists[i].posted_time %></div>
+            <div><%= post_lists[i].comments %></div>
+            
+            <% if(user === post_lists[i].author){ %>
+                <form action="edit" method="post">
+                    <input type="hidden" name="id" value="<%= post_lists[i]._id %>" >
+                    <input type="submit" value="edit">
+                </form>
+                <form action="delete" method="post">
+                    <input type="hidden" name="id" value="<%= post_lists[i]._id %>" >
+                    <input type="submit" value="delete">
+                </form>
+            <% } %>
+        <% } %>
+    <% } %>
+</div>
+
+</body>
+</html>
