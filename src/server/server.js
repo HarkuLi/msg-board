@@ -6,6 +6,7 @@ var userDB = require("../../public/js/userDB.js");
 var bodyParser = require("body-parser");
 var cookie = require('cookie');
 var escapeHtml = require('escape-html');
+const myIP = require('my-ip');
 
 var app = express();
 
@@ -33,6 +34,11 @@ app.get("/redirect", function(req, res){
   setTimeout(()=>{
     res.redirect("/");
   }, 150);
+});
+
+app.get("/serverIP", function(req, res){
+  var serverIP = myIP();
+  res.send(serverIP);
 });
 
 app.get("/login", function (req, res) {
