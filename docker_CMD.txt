@@ -1,0 +1,6 @@
+docker pull mongo
+docker pull ubuntu
+docker build -t msgboard ./
+docker volume create msgBoardDB
+docker run -it --rm --name msgBoardDB -v msgBoardDB:/data/db mongo
+docker run -it --rm --name msgBoard --link msgBoardDB -v [project path]:/msgBoard -p 3000:3000 msgboard
