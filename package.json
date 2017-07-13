@@ -4,6 +4,10 @@
   "description": "as title",
   "scripts": {
     "start": "npm install; nodemon src/server/server.js",
+    "create-vol": "docker volume create msgBoardDB",
+    "docker-build": "docker build -t msgboard .",
+    "docker-mongo": "docker run -it --rm --name msgBoardDB -v msgBoardDB:/data/db -p 27017:27017 mongo",
+    "docker-start": "docker run -it --rm --name msgBoard --link msgBoardDB -v ~/src/msgBoard:/msgBoard -p 3000:3000 msgboard",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "harku.li",
