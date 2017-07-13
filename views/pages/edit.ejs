@@ -5,13 +5,14 @@
 <body>
 <form action="do_edit" method="post">
     <div>
-        <div>title: </div><input type="text" name="title" value="<%= title %>"><br>
+        <div>title: </div><input type="text" name="title" value="<%= post.title %>"><br>
     </div>
     <div>
         <div>content: </div>
-        <textarea name="content"><%= content %></textarea><br>
+        <textarea name="content"><%= post.content %></textarea><br>
     </div>
-    <input type="hidden" name="id" value="<%= _id %>"></input>
+    <input type="hidden" name="return_page" value="<%= return_page %>"></input>
+    <input type="hidden" name="id" value="<%= post._id %>"></input>
     <input type="submit" value="post"></input>
 </form>
 </body>

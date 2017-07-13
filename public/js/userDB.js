@@ -1,49 +1,27 @@
-var Mongo = require('mongodb'); //for ObjectId()
 var MongoClient = require('mongodb').MongoClient;
 
 var dbUrl = "mongodb://msgBoardDB:27017/msgboard";
-var colle = 'user';
+var collection_name = 'user';
 
-var newUser = function(data){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.insert(data);
-        db.close();
+var getColle = MongoClient.connect(dbUrl)
+    .then((db)=>{
+        return db.collection(collection_name);
+    });
+
+var newUser = (data)=>{
+    getColle.then((colle)=>{
+        colle.insert(data);
     });
 };
 
-var getUserByName = function(name, cbfn){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.find({name: name}).toArray(function(err,items){
-            cbfn(items[0]);
+var getUserByName = (name)=>{
+    return getColle
+        .then((colle)=>{
+            return colle.find({name: name}).toArray();
+        })
+        .then((items)=>{
+            return items[0];
         });
-        db.close();
-    });
-}
-
-var editByID = function(id, data){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.updateOne({_id: Mongo.ObjectId(id)},
-                             {
-                                $set: {
-                                        title: data.title,
-                                        content: data.content,
-                                      }
-                             }
-        ).then(()=>{
-            db.close()
-        });
-    });
-}
-
-// var remove = function(id){
-//     MongoClient.connect(dbUrl, function(err, db){
-//         var collection = db.collection(colle);
-//         collection.remove({_id: Mongo.ObjectId(id)});
-//         db.close();
-//     });
-// };
+};
 
 module.exports = {newUser, getUserByName};

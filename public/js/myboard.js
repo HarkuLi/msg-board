@@ -1,64 +1,62 @@
-var Mongo = require('mongodb');
+var Mongo = require('mongodb'); //for ObjectId()
 var MongoClient = require('mongodb').MongoClient;
 
 var dbUrl = "mongodb://msgBoardDB:27017/msgboard";
-var colle = 'posts';
+var collection_name = 'posts';
 
-var newPost = function(data){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.insert(data);
-        db.close();
+var getColle = MongoClient.connect(dbUrl)
+    .then((db)=>{
+        return db.collection(collection_name);
+    });
+
+var newPost = (data)=>{
+    return getColle
+        .then((colle)=>{
+            colle.insert(data);
+        });
+};
+
+var getPostCount = getColle
+    .then((colle)=>{
+        return colle.count();
+    });
+
+var getPostList = (page)=>{
+    return getColle
+        .then((colle)=>{
+            return colle.find().sort({"_id" : -1}).skip(10*(page-1)).limit(10).toArray();
+        });
+};
+
+var getPostByID = (id)=>{
+    return getColle
+        .then((colle)=>{
+            return colle.find({_id: Mongo.ObjectId(id)}).toArray();
+        })
+        .then((items)=>{
+            return items[0];
+        });
+};
+
+var editByID = (id, data)=>{
+    getColle.then((colle)=>{
+        colle.updateOne(
+            {_id: Mongo.ObjectId(id)},
+            {
+                $set: 
+                {
+                    title: data.title,
+                    content: data.content
+                }
+            }
+        );
     });
 };
 
-var getPostList = function(cbfn){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.find().toArray(function(err,items){
-            cbfn(items);
-        });
-        db.close();
+var remove = (id)=>{
+    getColle.then((colle)=>{
+        colle.remove({_id: Mongo.ObjectId(id)});
     });
 };
 
-var getPostByID = function(id, cbfn){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.find({_id: Mongo.ObjectId(id)}).toArray(function(err,items){
-            cbfn(items[0]);
-        });
-        db.close();
-    });
-}
-
-var editByID = function(id, data){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.updateOne({_id: Mongo.ObjectId(id)},
-                             {
-                                $set: {
-                                        title: data.title,
-                                        content: data.content,
-                                      }
-                             }
-        ).then(()=>{
-            db.close()
-        });
-    });
-}
-
-var remove = function(id){
-    MongoClient.connect(dbUrl, function(err, db){
-        var collection = db.collection(colle);
-        collection.remove({_id: Mongo.ObjectId(id)});
-        db.close();
-    });
-};
-
-// var newPost = function(data)
-// {
-//     POST.post_lists.push(data);
-// };
-
-module.exports = {newPost, getPostList, getPostByID, editByID, remove};
+module.exports = {newPost, getPostCount, getPostList, getPostByID, editByID, remove};

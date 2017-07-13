@@ -22,12 +22,22 @@ app.use(serverStatic(path.resolve(__dirname, '../../public')));
 app.get("/", function (req, res) {
   var POSTS = {};
   var user = getUser(req);
+  var page = Number(req.query.page);
+  var max_page;
 
-  myboard.getPostList((list)=>{
-    POSTS.user = user;
-    POSTS.post_lists = list;
-    res.render("pages/index", POSTS);
-  });
+  if(!page) return res.redirect("/?page=" + 1);
+  myboard.getPostCount
+    .then((count)=>{
+      max_page = Math.ceil(count/10);
+      if(page > max_page) return res.redirect("/?page=" + max_page);
+      myboard.getPostList(page)
+        .then((list)=>{
+          POSTS.user = user;
+          POSTS.post_lists = list;
+          POSTS.page = page;
+          res.render("pages/index", POSTS);
+        });
+    });
 });
 
 app.get("/redirect", function(req, res){
@@ -49,7 +59,7 @@ app.post("/login_action", function (req, res) { //////need to add error input ha
   var name = req.body.name;
   var pw = req.body.pw;
 
-  userDB.getUserByName(name, (userData)=>{
+  userDB.getUserByName(name).then((userData)=>{
     if(userData && (pw === userData.pw)){
       res.setHeader('Set-Cookie', cookie.serialize('user', name, {
         httpOnly: true,
@@ -81,12 +91,14 @@ app.post("/signup_action", function (req, res) { //////need to add error input h
   var pw = req.body.pw;
 
   if(name && pw){
-    userDB.getUserByName(name, (userData)=>{
+    userDB.getUserByName(name).then((userData)=>{
       if(!userData){
-        userDB.newUser({
-                      name,
-                      pw,
-                    });
+        userDB.newUser(
+          {
+            name,
+            pw
+          }
+        );
       }
       else{
         //repeated user name
@@ -111,7 +123,7 @@ app.post("/do_post", function(req, res) {
   var user = getUser(req);
   if(user)
   {
-    let current_time = new Date(Date.now());
+    let current_time = new Date().toISOString();
     let data =
     {
         title: req.body.title,
@@ -126,26 +138,32 @@ app.post("/do_post", function(req, res) {
 });
 
 app.post("/edit", function(req, res){
-  myboard.getPostByID(req.body.id, (post)=>{
-    res.render("pages/edit", post);
-  });
+  var params = {};
+  params.return_page = req.body.page;
+  myboard.getPostByID(req.body.id)
+    .then((post)=>{
+      params.post = post;
+      res.render("pages/edit", params);
+    });
 });
 
 app.post("/do_edit", function(req, res) {
-  let id = req.body.id;
-  let title = req.body.title;
-  let content = req.body.content;
-  let updateData = {
+  var id = req.body.id;
+  var title = req.body.title;
+  var content = req.body.content;
+  var updateData = {
                       title,
                       content,
                    };
+  var return_page = req.body.return_page;
   myboard.editByID(id, updateData);
-  res.redirect("/");
+  res.redirect("/?page="+return_page);
 });
 
 app.post("/delete", function(req, res){
+  var return_page = req.body.page;
   myboard.remove(req.body.id);
-  res.redirect("/");
+  res.redirect("/?page="+return_page);
 });
 
 function getUser(req){

@@ -23,6 +23,16 @@
         <input type="submit" value="sign up">
     </form>
 <% } %>
+</br>
+</br>
+<form action="/" method="get" style="display:inline">
+    <input type="hidden" name="page" value="<%= page-1 %>">
+    <input type="submit" value="last page">
+</form>
+<form action="/" method="get" style="display:inline">
+    <input type="hidden" name="page" value="<%= page+1 %>">
+    <input type="submit" value="next page">
+</form>
 
 <div class="container">
     <% for(var i=0; i < post_lists.length; i++){%>
@@ -36,10 +46,12 @@
             
             <% if(user === post_lists[i].author){ %>
                 <form action="edit" method="post">
+                    <input type="hidden" name="page" value="<%= page %>" >
                     <input type="hidden" name="id" value="<%= post_lists[i]._id %>" >
                     <input type="submit" value="edit">
                 </form>
                 <form action="delete" method="post">
+                    <input type="hidden" name="page" value="<%= page %>" >
                     <input type="hidden" name="id" value="<%= post_lists[i]._id %>" >
                     <input type="submit" value="delete">
                 </form>
